@@ -622,6 +622,11 @@ class SQLTranslator(base_translator.BaseTranslator):
     def _ngsi_structured_to_db(attr):
         if isinstance(attr['value'], dict):
             return attr['value']
+        else:
+            logging.warning(
+                '{} cannot be cast to {} replaced with None'.format(
+                    attr.get('value', None), attr.get('type', None)))
+            return None
 
     @staticmethod
     def _ngsi_array_to_db(attr):
