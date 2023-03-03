@@ -629,7 +629,7 @@ class SQLTranslator(base_translator.BaseTranslator):
             if(attr['value'].includes('[') and attr['value'].includes(']')):
                 return json.loads(attr['value'])
             else:
-                return json.loads(attr['value'])
+                return json.loads(f'[{attr.get("value",None)}]')
         elif isinstance(attr['value'],list):
             return attr['value']
         else:
