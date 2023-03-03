@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from geocoding.slf.geotypes import *
 from exceptions.exceptions import AmbiguousNGSIIdError, UnsupportedOption, \
     NGSIUsageError, InvalidParameterValue, InvalidHeaderValue
@@ -595,10 +596,11 @@ class SQLTranslator(base_translator.BaseTranslator):
 
     @staticmethod
     def _ngsi_boolean_to_db(attr):
-        if isinstance(attr['value'], str) and attr['value'].lower() == 'true':
+        if isinstance(attr['value'], str) \
+                and (attr['value'].lower() == 'true' or attr['value'] == '1'):
             return True
         elif isinstance(attr['value'], str) \
-                and attr['value'].lower() == 'false':
+                and (attr['value'].lower() == 'false' or attr['value'] == '0'):
             return False
         elif isinstance(attr['value'], int) and attr['value'] == 1:
             return True
@@ -618,11 +620,23 @@ class SQLTranslator(base_translator.BaseTranslator):
 
     @staticmethod
     def _ngsi_structured_to_db(attr):
-        raise NotImplementedError
+        if isinstance(attr['value'], dict):
+            return attr['value']
 
     @staticmethod
     def _ngsi_array_to_db(attr):
-        raise NotImplementedError
+        if isinstance(attr['value'],str):
+            if(attr['value'].includes('[') and attr['value'].includes(']')):
+                return json.loads(attr['value'])
+            else:
+                return json.loads(attr['value'])
+        elif isinstance(attr['value'],list):
+            return attr['value']
+        else:
+            logging.warning(
+                '{} cannot be cast to {} replaced with None'.format(
+                    attr.get('value', None), attr.get('type', None)))
+            return None
 
     @staticmethod
     def _ngsi_text_to_db(attr):
